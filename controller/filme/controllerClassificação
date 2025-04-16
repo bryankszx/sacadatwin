@@ -1,0 +1,146 @@
+const message = require('../../modulo/config.js')
+const diretorDAO = require('../../model/DAO/clasificação.js')
+
+// Inserir nova Classificação
+const inserirClassificacao = async function(clasificacao, contentType) {
+  try {
+    if (String(contentType).toLowerCase() == 'application/json') {
+      if (
+        clasificacao.idade == '' || clasificacao.idade == undefined || clasificacao.idade == null || clasificacao.idade.length > 45 ||
+        clasificacao.descricao == '' || clasificacao.descricao == undefined || clasificacao.descricao == null || clasificacao.descricao.length > 45
+      ) {
+        return message.ERROR_REQUIRED_FIELDS // 400
+      } else {
+        let result = await clasificacaoDAO.insertClassificacao(clasificacao)
+
+        if (result)
+          return message.SUCCESS_CREATED_ITEM // 201
+        else
+          return message.ERROR_INTERNAL_SERVER
+      }
+    } else {
+      return message.ERROR_CONTENT_TYPE // 415
+    }
+  } catch (error) {
+    return message.ERROR_INTERNAL_SERVER_CONTROLLER
+  }
+}
+
+// Atualizar classificacao
+const atualizarClassificacao = async function(id, clasificacao, contentType) {
+  try {
+    if (String(contentType).toLowerCase() == 'application/json') {
+      if (
+        id == '' || id == undefined || id == null || isNaN(id) || id <= 0 ||
+        clasificacao.idade == '' || clasificacao.idade == undefined || clasificacao.idade == null || clasificacao.idade.length > 45 ||
+        clasificacao.descricao == '' || clasificacao.descricao == undefined || clasificacao.descricao == null || clasificacao.descricao.length > 45 
+      ) {
+        return message.ERROR_REQUIRED_FIELDS // 400
+      } else {
+        let resultClassificacao = await clasificacaoDAO.selectByIdClassificacao(parseInt(id))
+
+        if (resultClassificacao != false && typeof resultClassificacao == 'object') {
+          if (resultClassificacao.length > 0) {
+            clasificacao.id_classificacao = parseInt(id)
+
+            let result = await clasificacaoDAO.updateClassificacao(clasificacao)
+
+            if (result)
+              return message.SUCCESS_UPDATED_ITEM // 200
+            else
+              return message.ERROR_INTERNAL_SERVER_MODEL // 500
+          } else {
+            return message.ERROR_NOT_FOUND // 404
+          }
+        } else {
+          return message.ERROR_INTERNAL_SERVER_MODEL
+        }
+      }
+    } else {
+      return message.ERROR_CONTENT_TYPE // 415
+    }
+  } catch (error) {
+    return message.ERROR_INTERNAL_SERVER_CONTROLLER // 500
+  }
+}
+
+// Excluir diretor
+const excluirClassificacao = async function(id) {
+  try {
+    if (id == '' || id == undefined || id == null || isNaN(id) || id <= 0) {
+      return message.ERROR_REQUIRED_FIELDS // 400
+    } else {
+      let resultClassificacao = await clasificacaoDAO.selectByIdClassificacao(parseInt(id))
+
+      if (resultClassificacao != false && typeof resultClassificacao == 'object') {
+        if (resultClassificacao.length > 0) {
+          let result = await clasificacaoDAO.deleteClassificacao(parseInt(id))
+
+          if (result)
+            return message.SUCCESS_DELETED_ITEM // 200
+          else
+            return message.ERROR_INTERNAL_SERVER_MODEL // 500
+        } else {
+          return message.ERROR_NOT_FOUND // 404
+        }
+      } else {
+        return message.ERROR_INTERNAL_SERVER_MODEL // 500
+      }
+    }
+  } catch (error) {
+    return message.ERROR_INTERNAL_SERVER_CONTROLLER // 500
+  }
+}
+
+// Listar todos os diretores
+const listarClassificacao = async function() {
+  try {
+    let resultClassificacao = await clasificacaoDAO.selectAllClassificacao()
+
+    if (resultClassificacao != false && resultClassificacao.length > 0) {
+      let dadosClassificacao = {}
+      dadosClassificacao.status = true
+      dadosClassificacao.status_code = 200
+      dadosClassificacao.itens = resultClassificacao.length
+      dadosClassificacao.diretores = resultClassificacao
+
+      return dadosClassificacao
+    } else {
+      return message.ERROR_NOT_FOUND
+    }
+  } catch (error) {
+    return message.ERROR_INTERNAL_SERVER_CONTROLLER
+  }
+}
+
+// Buscar diretor por ID
+const buscarClassificacao = async function(id_clasificacao) {
+  try {
+    if (id_clasificacao == '' || id_clasificacao == undefined || id_clasificacao == null || isNaN(id_clasificacao) || id_clasificacao <= 0) {
+      return message.ERROR_REQUIRED_FIELDS
+    } else {
+      let resultClassificacao = await clasificacaoDAO.selectByIdClassificacao(parseInt(id_clasificacao))
+
+      if (resultClassificacao != false && resultClassificacao.length > 0) {
+        let dadosClassificacao = {}
+        dadosClassificacao.status = true
+        dadosClassificacao.status_code = 200
+        dadosClassificacao.clasificacao = resultClassificacao
+
+        return dadosClassificacao
+      } else {
+        return message.ERROR_NOT_FOUND
+      }
+    }
+  } catch (error) {
+    return message.ERROR_INTERNAL_SERVER_CONTROLLER
+  }
+}
+
+module.exports = {
+  inserirClassificacao,
+  atualizarClassificacao,
+  excluirClassificacao,
+  listarClassificacao,
+  buscarClassificacao
+}
